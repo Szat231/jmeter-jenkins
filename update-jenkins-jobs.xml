@@ -1,0 +1,70 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@1292.v27d8cc3e2602">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2131.vb_9788088fdb_5"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2131.vb_9788088fdb_5">
+      <jobProperties/>
+      <triggers/>
+      <parameters/>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3659.v582dc37621d8">
+    <script>pipeline {&#10;
+    agent any&#10;
+    &#10;
+    stages {&#10;
+        &#10;
+        stage(&quot;clean&quot;) {&#10;
+            steps {&#10;
+                cleanWs()&#10;
+            }&#10;
+        }&#10;
+        &#10;
+        stage(&quot;Get scripts from github repo&quot;) {&#10;
+            steps {&#10;
+                sh &apos;&apos;&apos;#!/bin/bash&#10;
+                    git clone --depth 1 --branch main https://github.com/gpiechnik2/dummy-repository.git .&#10;
+                &apos;&apos;&apos;&#10;
+            }&#10;
+        }&#10;
+        &#10;
+        stage(&quot;Create jobs&quot;) {&#10;
+            steps {&#10;
+                sh &apos;&apos;&apos;#!/bin/bash&#10;
+                    &#10;
+                    allFiles=`ls ./scripts/*.jmx`&#10;
+                    &#10;
+                    for eachFile in $allFiles&#10;
+                    do&#10;
+                        fileName=$(basename $eachFile .jmx)&#10;
+                        filePath=$(cut -c2- &lt;&lt;&lt; $eachFile)&#10;
+                        &#10;
+                        # create temporary file for config purposes&#10;
+                        fileLocation=&quot;$fileName.xml&quot;&#10;
+                        &#10;
+                        # \\x27 stands for &apos; inside &apos;&apos;&#10;
+                        echo -e &apos;&lt;?xml version=\\x271.1\\x27 encoding=\\x27UTF-8\\x27?&gt;\n&lt;flow-definition plugin=&quot;workflow-job@1292.v27d8cc3e2602&quot;&gt;\n  &lt;actions&gt;\n    &lt;org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin=&quot;pipeline-model-definition@2.2131.vb_9788088fdb_5&quot;/&gt;\n    &lt;org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin=&quot;pipeline-model-definition@2.2131.vb_9788088fdb_5&quot;&gt;\n      &lt;jobProperties/&gt;\n      &lt;triggers/&gt;\n      &lt;parameters/&gt;\n      &lt;options/&gt;\n    &lt;/org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction&gt;\n  &lt;/actions&gt;\n  &lt;description&gt;&lt;/description&gt;\n  &lt;keepDependencies&gt;false&lt;/keepDependencies&gt;\n  &lt;properties/&gt;\n  &lt;definition class=&quot;org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition&quot; plugin=&quot;workflow-cps@3659.v582dc37621d8&quot;&gt;\n    &lt;script&gt;node {&amp;#10;\n    stage(&amp;quot;clean&amp;quot;) {&amp;#10;\n        cleanWs()&amp;#10;\n    }&amp;#10;\n    &amp;#10;\n    stage(&amp;quot;Get scripts from github repo&amp;quot;) {&amp;#10;\n        sh &amp;apos;&amp;apos;&amp;apos;#!/bin/bash&amp;#10;\n            git clone --depth 1 --branch main https://github.com/gpiechnik2/dummy-repository.git .&amp;#10;\n        &amp;apos;&amp;apos;&amp;apos;&amp;#10;\n    }&amp;#10;\n    &amp;#10;\n    stage(&amp;quot;Run test&amp;quot;) {&amp;#10;\n        bzt &amp;quot;./scripts/&apos;$fileName&apos;.jmx&amp;quot;&amp;#10;   \n    }&amp;#10;\n}&lt;/script&gt;\n    &lt;sandbox&gt;true&lt;/sandbox&gt;\n  &lt;/definition&gt;\n  &lt;triggers/&gt;\n  &lt;disabled&gt;false&lt;/disabled&gt;\n&lt;/flow-definition&gt;&apos; &gt;&gt; $fileLocation&#10;
+                        &#10;    
+                        # create job&#10;
+                        jobResponse=$(curl -s XPOST &quot;http://127.0.0.1:8080/createItem?name=$fileName&quot; --data @$fileName.xml -H &quot;Content-Type:application/xml&quot;)&#10;
+                        &#10;
+                        # update job if created before&#10;
+                        jobResponse=$(curl -s XPOST &quot;http://127.0.0.1:8080/job/$fileName/config.xml&quot; --data @$fileName.xml -H &quot;Content-Type:application/xml&quot;)&#10;
+                        &#10;
+                        # delete temporary config file&#10;
+                        rm $fileLocation&#10;
+                    done&#10;
+                &apos;&apos;&apos;&#10;
+            }&#10;
+        }&#10;
+    }&#10;
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

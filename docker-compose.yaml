@@ -1,0 +1,59 @@
+version: "3.4"
+
+networks:
+  jenkins:
+  grafana:
+  prepare-jenkins:
+
+services:
+  influxdb:
+    image: influxdb:1.8
+    networks:
+      - jenkins
+      - grafana
+    ports:
+      - "8086:8086"
+    environment:
+      - INFLUXDB_DB=jmeter
+
+  grafana:
+    image: grafana/grafana:latest
+    networks:
+      - grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_BASIC_ENABLED=false
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    volumes:
+      - ./dashboards:/var/lib/grafana/dashboards
+      - ./grafana-dashboard.yaml:/etc/grafana/provisioning/dashboards/dashboard.yaml
+      - ./grafana-datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+
+  jenkins:
+    # image: jenkins/jenkins:latest
+    image: jenkinstaurus:experimental
+    networks:
+      - grafana
+      - prepare-jenkins
+    ports:
+      - "8080:8080"
+    environment:
+      # we want to bypass setup and disable csrf protection to run bash scripts for automation 
+      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false -Dhudson.security.csrf.GlobalCrumbIssuerConfiguration.DISABLE_CSRF_PROTECTION=true"
+      JMETER_OUT: "http://influxdb:8086"
+      JENKINS_URL: "http://jenkins:8080"
+
+  prepare-jenkins:
+    image: ellerbrock/alpine-bash-curl-ssl:latest
+    networks:
+      - prepare-jenkins
+    ports:
+     - "6565:6565"
+    environment:
+      - JENKINS_URL=http://jenkins:8080
+    volumes:
+      - ./prepare-jenkins.sh:/prepare-jenkins.sh
+      - ./update-jenkins-jobs.xml:/update-jenkins-jobs.xml
