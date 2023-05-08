@@ -34,7 +34,7 @@ function CreateJobForScriptsUpdating {
 }
 
 echo "[Info] Waiting 4 minutes for plugins to be installed"
-sleep 2
+sleep 240
 
 # add Pipeline plugin
 pluginName="workflow-aggregator"
@@ -52,7 +52,7 @@ curl -X POST -d '<jenkins><install plugin="performance@918.v5511b_a_d40338" /></
 ValidatePlugin
 
 # wait for plugins to be properly configured
-# sleep 2
+sleep 20
 
 # add Docker plugin
 # pluginName="Docker"
