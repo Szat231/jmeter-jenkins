@@ -1,6 +1,6 @@
 # JMeter Boilerplate
 
-Boilerplate docker-compose with automatic configuration of InfluxDB, Grafana, Jenkins and JMeter
+Boilerplate docker-compose with automatic configuration of InfluxDB, Grafana, Jenkins and JMeter scripts.
 
 ## Configuration
 
@@ -19,8 +19,3 @@ docker tag jenkinstaurus:latest jenkinstaurus:experimental
 ```bash
 run.sh
 ```
-
-## TODO
-
-1. Podczas stawiania nowej instancji Jenkinsa, przez pierwsze ~5 minut ściągają się domyślnie pluginy, których nie wykorzystujemy. Zrobić research, czy można zablokować ściąganie ich w konfiguracji.
-2. Globalną zmienną dla url repo
