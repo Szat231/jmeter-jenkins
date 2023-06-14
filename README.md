@@ -10,8 +10,6 @@ First, change the repository configuration (dummy-repository.git) in the `update
 
 ```bash
 docker build -t jenkinstaurus .
-
-docker tag jenkinstaurus:latest jenkinstaurus:experimental
 ```
 
 ## Running
