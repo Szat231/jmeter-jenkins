@@ -21,3 +21,4 @@ run.sh
 ## TODO
 - Integracja z Confluence
 - Możliwość uruchamiania na wielu generatorach
+- Dodać Keptn
