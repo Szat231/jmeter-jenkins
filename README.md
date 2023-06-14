@@ -17,3 +17,7 @@ docker build -t jenkinstaurus .
 ```bash
 run.sh
 ```
+
+## TODO
+- Integracja z Confluence
+- Możliwość uruchamiania na wielu generatorach
